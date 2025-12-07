@@ -1,103 +1,471 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Menú de Movilidad RA - CDMX</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador del Mapa del Tren Ligero CDMX</title>
     <style>
-        /* Estilos para que la RA ocupe toda la pantalla */
-        body { margin: 0; }
-        .mindar-ui-overlay { display: none; }
-    </style>
-
-    <script>
-        // 1. FUNCIÓN DE ACCIÓN AL HACER CLIC
-        function handleButtonClick(transporte) {
-            // Se ejecuta cuando haces clic.
-            alert('¡Has presionado el botón: ' + transporte + '! (Prueba Final Exitosa)');
-            
-            // Si quieres abrir una página real, puedes reemplazar el alert por:
-            /*
-            const urls = {
-                "RTP": "https://www.rtp.cdmx.gob.mx/",
-                "METROBUS": "https://www.metrobus.cdmx.gob.mx/",
-                "TREN LIGERO": "https://www.ste.cdmx.gob.mx/servicios/tren-ligero",
-                "CABLEBUS": "https://www.ste.cdmx.gob.mx/servicios/cablebus"
-            };
-            if (urls[transporte]) {
-                window.open(urls[transporte], '_blank');
-            }
-            */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        // 2. COMPONENTE DE ESCUCHA DE CLICS
-        AFRAME.registerComponent('button-click-handler', {
-            init: function() {
-                this.el.addEventListener('click', (evt) => {
-                    const transporte = this.el.getAttribute('data-transporte');
-                    if (transporte) {
-                        handleButtonClick(transporte);
-                    }
-                });
+        body {
+            background: linear-gradient(135deg, #1a3a8f 0%, #0c1b4d 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            color: #ffffff;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            color: #ffde59;
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a8c6ff;
+            max-width: 800px;
+            line-height: 1.5;
+        }
+        
+        .metro-card-section {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .metro-card {
+            width: 300px;
+            height: 180px;
+            background: linear-gradient(to right, #1a3a8f, #2a5acf);
+            border-radius: 15px;
+            margin: 30px auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .metro-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .metro-card:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+            animation: shine 3s infinite linear;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ffde59;
+        }
+        
+        .metro-logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .card-chip {
+            width: 40px;
+            height: 30px;
+            background: linear-gradient(135deg, #d4af37, #ffde59);
+            border-radius: 5px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        .card-chip:after {
+            content: "";
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+        
+        .card-footer {
+            text-align: right;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+        
+        .scan-button {
+            background: linear-gradient(to right, #ffde59, #ffcc00);
+            color: #1a3a8f;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 222, 89, 0.4);
+        }
+        
+        .scan-button:hover {
+            background: linear-gradient(to right, #ffcc00, #e6b800);
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(255, 222, 89, 0.6);
+        }
+        
+        .scan-button:active {
+            transform: scale(0.98);
+        }
+        
+        .map-section {
+            width: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 1s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .map-container {
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 900px;
+            margin-top: 20px;
+        }
+        
+        .map-title {
+            color: #1a3a8f;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+        
+        .map-image {
+            width: 100%;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+        }
+        
+        .instructions {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            width: 100%;
+            max-width: 900px;
+            text-align: center;
+        }
+        
+        .instructions h3 {
+            color: #ffde59;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .instructions p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #e6e6e6;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        .step-number {
+            background-color: #ffde59;
+            color: #1a3a8f;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .back-button {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .scanner-animation {
+            width: 300px;
+            height: 10px;
+            background: linear-gradient(90deg, transparent, #ffde59, transparent);
+            margin: 20px auto;
+            border-radius: 5px;
+            display: none;
+            animation: scan 2s ease-in-out infinite;
+        }
+        
+        @keyframes scan {
+            0% { transform: translateY(-90px); }
+            50% { transform: translateY(90px); }
+            100% { transform: translateY(-90px); }
+        }
+        
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
             }
-        });
-
-        // 3. FIX FINAL PARA NAVEGADORES MÓVILES (AYUDA A ACTIVAR EL RAYCASTER)
-        window.onload = function() {
-            document.body.addEventListener('touchstart', function() {
-                console.log('Touch detectado. Inicializando raycaster.');
-            });
-        };
-    </script>
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .metro-card {
+                width: 280px;
+                height: 170px;
+            }
+            
+            .map-container, .instructions {
+                padding: 15px;
+            }
+        }
+    </style>
 </head>
 <body>
-    
-    <a-scene mindar-image="imageTargetSrc: assets/tarjeta_cdmx.mind;"
-             vr-mode-ui="enabled: false"
-             device-orientation-permission-ui="enabled: false">
-
-        <a-camera active="false" 
-                  position="0 0 0" 
-                  raycaster="objects: .clickable; far: 10" 
-                  cursor="rayOrigin: mouse"
-                  >
-            <a-ring color="#00FFFF" radius-inner="0.005" radius-outer="0.01" position="0 0 -1" material="shader: flat"></a-ring>
-        </a-camera>
+    <div class="container">
+        <header>
+            <h1>Visualizador del Mapa del Tren Ligero CDMX</h1>
+            <p class="subtitle">Acerca tu tarjeta del Metro de la Ciudad de México para escanear y visualizar el mapa completo del Tren Ligero</p>
+        </header>
         
-        <a-entity mindar-image-target="targetIndex: 0">
+        <section class="metro-card-section">
+            <h2>Tarjeta del Metro CDMX</h2>
+            <p>Coloca tu tarjeta en el área de abajo para escanear</p>
             
-            <a-entity position="0 0.05 0"> 
+            <div class="metro-card" id="metroCard">
+                <div class="card-header">
+                    <div class="card-title">TARJETA DE TRANSPORTE</div>
+                    <div class="metro-logo">M</div>
+                </div>
                 
-                <a-box class="clickable" data-transporte="RTP" button-click-handler
-                       position="-0.45 0.4 0.1" color="#D44646" 
-                       width="0.25" height="0.1" depth="0.05">
-                    <a-text value="RTP" align="center" width="0.8" position="0 0 0.03" color="#FFF"></a-text>
-                </a-box>
+                <div class="card-chip"></div>
+                
+                <div class="card-footer">
+                    Ciudad de México • Válida en Metro y Tren Ligero
+                </div>
+            </div>
+            
+            <div class="scanner-animation" id="scanner"></div>
+            
+            <button class="scan-button" id="scanButton">Escanear Tarjeta</button>
+        </section>
+        
+        <section class="map-section" id="mapSection">
+            <div class="map-container">
+                <h2 class="map-title">Mapa del Tren Ligero de la Ciudad de México</h2>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Tren_Ligero_de_la_Ciudad_de_M%C3%A9xico.svg/1200px-Tren_Ligero_de_la_Ciudad_de_M%C3%A9xico.svg.png" alt="Mapa del Tren Ligero CDMX" class="map-image" id="mapImage">
+            </div>
+            
+            <div class="instructions">
+                <h3>Información del Tren Ligero</h3>
+                <p>El Tren Ligero de la Ciudad de México es un sistema de transporte ferroviario que sirve a la zona sur de la ciudad. Actualmente cuenta con una línea que va de Tasqueña a Xochimilco.</p>
+                
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div>Estación Terminal: Tasqueña (conexión con Metro Línea 2)</div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div>Estación Terminal: Xochimilco (conexión con trenes a Cuernavaca)</div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div>Longitud total: 13.04 km con 18 estaciones</div>
+                </div>
+                
+                <p>El horario de servicio es de lunes a domingo de 5:00 a 24:00 horas.</p>
+            </div>
+            
+            <button class="back-button" id="backButton">Regresar al Escáner</button>
+        </section>
+        
+        <footer>
+            <p>Proyecto para concurso con mind.js • Sistema simulado de escaneo de tarjeta del Metro CDMX</p>
+            <p>Este es un prototipo de demostración. La tarjeta y el escaneo son simulados.</p>
+        </footer>
+    </div>
 
-                <a-box class="clickable" data-transporte="METROBUS" button-click-handler
-                       position="0.45 0.4 0.1" color="#34A853" 
-                       width="0.25" height="0.1" depth="0.05">
-                    <a-text value="METROBUS" align="center" width="0.8" position="0 0 0.03" color="#FFF"></a-text>
-                </a-box>
-
-                <a-box class="clickable" data-transporte="TREN LIGERO" button-click-handler
-                       position="-0.45 0.1 0.1" color="#4285F4" 
-                       width="0.25" height="0.1" depth="0.05">
-                    <a-text value="TREN LIGERO" align="center" width="0.8" position="0 0 0.03" color="#FFF"></a-text>
-                </a-box>
-
-                <a-box class="clickable" data-transporte="CABLEBUS" button-click-handler
-                       position="0.45 0.1 0.1" color="#FBBC05" 
-                       width="0.25" height="0.1" depth="0.05">
-                    <a-text value="CABLEBUS" align="center" width="0.8" position="0 0 0.03" color="#000"></a-text>
-                </a-box>
-
-            </a-entity>
-        </a-entity>
-    </a-scene>
+    <script>
+        // Elementos del DOM
+        const scanButton = document.getElementById('scanButton');
+        const metroCard = document.getElementById('metroCard');
+        const scanner = document.getElementById('scanner');
+        const mapSection = document.getElementById('mapSection');
+        const backButton = document.getElementById('backButton');
+        const mapImage = document.getElementById('mapImage');
+        
+        // Variables para simular el estado de la tarjeta
+        let cardScanned = false;
+        
+        // Función para simular el escaneo de la tarjeta
+        function scanCard() {
+            if (cardScanned) return;
+            
+            // Mostrar animación del escáner
+            scanner.style.display = 'block';
+            scanButton.textContent = 'Escanenado...';
+            scanButton.disabled = true;
+            metroCard.style.transform = 'scale(0.95)';
+            
+            // Simular tiempo de escaneo
+            setTimeout(() => {
+                // Ocultar animación del escáner
+                scanner.style.display = 'none';
+                
+                // Mostrar el mapa
+                mapSection.style.display = 'flex';
+                document.querySelector('.metro-card-section').style.display = 'none';
+                
+                // Cambiar estado
+                cardScanned = true;
+                
+                // Efecto de carga de la imagen del mapa
+                mapImage.style.opacity = '0';
+                setTimeout(() => {
+                    mapImage.style.transition = 'opacity 1s ease';
+                    mapImage.style.opacity = '1';
+                }, 100);
+                
+            }, 2000);
+        }
+        
+        // Función para volver al escáner
+        function goBackToScanner() {
+            mapSection.style.display = 'none';
+            document.querySelector('.metro-card-section').style.display = 'block';
+            scanButton.textContent = 'Escanear Tarjeta';
+            scanButton.disabled = false;
+            metroCard.style.transform = 'translateY(-5px)';
+            
+            // Restablecer estado después de un breve retraso
+            setTimeout(() => {
+                cardScanned = false;
+            }, 500);
+        }
+        
+        // Event Listeners
+        scanButton.addEventListener('click', scanCard);
+        metroCard.addEventListener('click', scanCard);
+        backButton.addEventListener('click', goBackToScanner);
+        
+        // Simular escaneo con la tecla Espacio
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space' && !cardScanned) {
+                event.preventDefault();
+                scanCard();
+            }
+            
+            // Tecla Escape para volver
+            if (event.code === 'Escape' && cardScanned) {
+                goBackToScanner();
+            }
+        });
+        
+        // Efecto de parpadeo para la tarjeta (simulando chip NFC)
+        setInterval(() => {
+            if (!cardScanned) {
+                const chip = document.querySelector('.card-chip');
+                chip.style.opacity = chip.style.opacity === '0.7' ? '1' : '0.7';
+            }
+        }, 800);
+    </script>
 </body>
 </html>
-
