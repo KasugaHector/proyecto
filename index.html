@@ -641,15 +641,6 @@
             // Detener cámara
             stopCamera();
             
-            // Mostrar información de la tarjeta
-            cardInfo.style.display = "flex";
-            cardData.innerHTML = `
-                <div><strong>Tarjeta:</strong> ${cardType}</div>
-                <div><strong>UID:</strong> ${cardUID}</div>
-                <div><strong>Saldo:</strong> $${balance} MXN</div>
-                <div><strong>Último uso:</strong> ${lastUse}</div>
-                <div><strong>Viajes este mes:</strong> ${trips}</div>
-            `;
             
             // Mostrar el mapa después de un breve retraso
             setTimeout(() => {
@@ -792,4 +783,5 @@
     </script>
 </body>
 </html>
+
 
